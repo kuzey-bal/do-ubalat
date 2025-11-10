@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <title>İyi ki varsın — Doğu Balat</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg1: #0f1b2b;
+      --bg2: #081024;
+      --accent: #ffdf6b;
+      --accent2: #ff6b9f;
+      --accent3: #7be3ff;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;background: radial-gradient(circle at 20% 10%, #10203a 0%, var(--bg1) 40%, var(--bg2) 100%);overflow:hidden;color:white}
+
+    .wrap{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      flex-direction:column;
+      text-align:center;
+      position:relative;
+    }
+
+    h2 {
+      margin:0 0 12px 0;
+      font-weight:600;
+      color:var(--accent);
+      letter-spacing:1px;
+      font-size: clamp(20px, 3vw, 28px);
+      text-shadow: 0 6px 18px rgba(0,0,0,0.6);
+      transform: translateY(0);
+      animation: subtitleIn .8s ease-out;
+    }
+    @keyframes subtitleIn { from {opacity:0; transform: translateY(10px)} to {opacity:1; transform: translateY(0)} }
+
+    .name {
+      display:flex;
+      gap:0.18em;
+      justify-content:center;
+      align-items:center;
+      margin-bottom:18px;
+      font-size: clamp(36px, 8vw, 96px);
+      font-weight:800;
+      line-height:1;
+      color: white;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.6));
+    }
+
+    .letter {
+      display:inline-block;
+      transform-origin:center;
+      padding:0 2px;
+      color: var(--accent2);
+      text-shadow: 0 0 20px rgba(255,107,159,0.18), 0 0 40px rgba(255,215,107,0.06);
+      animation: letterGlow 1.6s ease-in-out infinite alternate;
+    }
+
+    /* Farklı gecikmelerle harfleri oynat */
+    .letter:nth-child(odd){ animation-delay: 0.06s; }
+    .letter:nth-child(2n){ animation-delay: 0.28s; }
+    .letter:nth-child(3n){ animation-delay: 0.5s; }
+
+    @keyframes letterGlow {
+      from { transform: scale(1); text-shadow: 0 0 10px rgba(123,227,255,0.16); }
+      to   { transform: scale(1.08) rotate(-1deg); text-shadow: 0 0 36px rgba(255,107,159,0.24), 0 0 66px rgba(255,223,107,0.12); }
+    }
+
+    /* vurgu altında hafif ışık */
+    .name::after{
+      content:'';
+      display:block;
+      height:14px;
+      width:60%;
+      margin:10px auto 0;
+      background: linear-gradient(90deg, rgba(255,215,107,0.12), rgba(255,107,159,0.08), rgba(123,227,255,0.06));
+      border-radius:8px;
+      filter: blur(8px);
+      opacity:.9;
+    }
+
+    /* küçük açıklama */
+    p.lead{
+      margin:10px 0 24px;
+      color: #dfefff;
+      opacity:0.9;
+      max-width:760px;
+    }
+
+    /* kontrol butonları */
+    .controls{
+      display:flex;
+      gap:12px;
+      margin-top:10px;
+      z-index:10;
+    }
+    .btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.06);
+      color:white;
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    }
+    .btn:active{ transform: translateY(1px) }
+
+    /* küçük ekranlar */
+    @media (max-width:520px){
+      .name{ font-size: 34px; }
+      .controls{ flex-direction:column; }
+    }
+
+    /* canvas konfeti ve balonlar arka plan */
+    canvas#effects{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* alt bilgi küçük */
+    footer{
+      position:absolute;
+      bottom:10px;
+      left:50%;
+      transform:translateX(-50%);
+      color:rgba(255,255,255,0.6);
+      font-size:13px;
+      z-index:10;
+    }
+
+  </style>
+</head>
+<body>
+  <canvas id="effects"></canvas>
+
+  <div class="wrap" role="main" aria-label="Arkadaşa özel tebrik sayfası">
+    <h2>İyi ki varsın</h2>
+
+    <!-- Her harfi ayrı span içinde -->
+    <div class="name" aria-hidden="false" id="name">
+      <!-- "Doğu Balat" yazısını tam olarak istediğin şekilde yazdım -->
+      <span class="letter">D</span>
+      <span class="letter">o</span>
+      <span class="letter">ğ</span>
+      <span class="letter">u</span>
+      <span class="letter">&nbsp;</span>
+      <span class="letter">B</span>
+      <span class="letter">a</span>
+      <span class="letter">l</span>
+      <span class="letter">a</span>
+      <span class="letter">t</span>
+    </div>
+
+    <p class="lead">Bu sayfayı arkadaşın için hediye edebilirsin — ekranın üstündeki butonlarla yazıyı paylaş, yazdır ya da efektleri durdur/başlat.</p>
+
+    <div class="controls" role="group" aria-label="Kontroller">
+      <button class="btn" id="toggleEffects">Efektleri Durdur</button>
+      <button class="btn" id="printBtn">Yazdır / İndir (PDF)</button>
+      <button class="btn" id="shareBtn">Paylaş (Kopyala Bağlantı)</button>
+    </div>
+
+    <footer>Hazırlandı • Arkadaşa özel</footer>
+  </div>
+
+  <script>
+    /* ----------------------
+       Basit konfeti + balon efektleri
+       Tek canvas üzerinde particle simülasyonu
+       ---------------------- */
+    const canvas = document.getElementById('effects');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = innerWidth;
+    let H = canvas.height = innerHeight;
+    let running = true;
+
+    window.addEventListener('resize', () => {
+      W = canvas.width = innerWidth;
+      H = canvas.height = innerHeight;
+    });
+
+    // Partikül listesi
+    const parts = [];
+    const balloons = [];
+
+    // Renk paleti
+    const colors = ['#FF6B9F', '#FFD36B', '#7BE3FF', '#9BFF9A', '#CF8CFF'];
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    // Konfeti particle üret
+    function spawnConfetti(x,y){
+      for(let i=0;i<18;i++){
+        parts.push({
+          x:x + rand(-8,8),
+          y:y + rand(-8,8),
+          vx: rand(-3,3),
+          vy: rand(-6, -1),
+          size: Math.floor(rand(6,12)),
+          angle: rand(0,Math.PI*2),
+          spin: rand(-0.2,0.2),
+          color: colors[Math.floor(rand(0,colors.length))]
+        });
+      }
+    }
+
+    // Balloon üret
+    function spawnBalloon(){
+      balloons.push({
+        x: rand(40, W-40),
+        y: H + 60,
+        vy: rand(-1.2, -0.6),
+        size: rand(18, 42),
+        color: colors[Math.floor(rand(0,colors.length))],
+        sway: rand(0.5, 1.6),
+        phase: rand(0, Math.PI*2)
+      });
+    }
+
+    // Otomatik spawn
+    let confettiTimer = 0;
+    let balloonTimer = 0;
+
+    function update(dt){
+      if(!running) return;
+      // güncelle parçacıklar
+      for(let i=parts.length-1;i>=0;i--){
+        const p = parts[i];
+        p.vy += 0.12; // gravity
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += p.spin;
+        if(p.y > H + 50) parts.splice(i,1);
+      }
+
+      for(let i=balloons.length-1;i>=0;i--){
+        const b = balloons[i];
+        b.y += b.vy;
+        b.x += Math.sin((Date.now()/1000)*b.sway + b.phase) * 0.8;
+        if(b.y < -80) balloons.splice(i,1);
+      }
+
+      confettiTimer += dt;
+      balloonTimer += dt;
+      if(confettiTimer > 400){ // sık aralıklarla hafif konfeti
+        spawnConfetti(rand(80,W-80), H - 60);
+        confettiTimer = 0;
+      }
+      if(balloonTimer > 1800){
+        spawnBalloon();
+        balloonTimer = 0;
+      }
+    }
+
+    function draw(){
+      if(!running) return;
+      // hafif transparan arka planla sil
+      ctx.clearRect(0,0,W,H);
+
+      // parçacıkları çiz
+      for(const p of parts){
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+        ctx.restore();
+      }
+
+      // balonları çiz
+      for(const b of balloons){
+        // ip
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y + b.size/1.2);
+        ctx.lineTo(b.x, b.y + b.size*1.8);
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // balon gövdesi (oval)
+        ctx.beginPath();
+        const grd = ctx.createLinearGradient(b.x, b.y - b.size/2, b.x, b.y + b.size/2);
+        grd.addColorStop(0, lighten(b.color,0.15));
+        grd.addColorStop(1, b.color);
+        ctx.fillStyle = grd;
+        roundEllipse(ctx, b.x, b.y, b.size*0.9, b.size*1.15);
+        ctx.fill();
+
+        // parlama
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.ellipse(b.x - b.size*0.25, b.y - b.size*0.25, b.size*0.25, b.size*0.38, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    // helper: çember benzeri oval çiz
+    function roundEllipse(c, x, y, w, h){
+      c.save();
+      c.beginPath();
+      c.ellipse(x, y, w, h, 0, 0, Math.PI*2);
+      c.closePath();
+      c.restore();
+    }
+
+    function lighten(hex, amt){
+      // hex like #rrggbb
+      const c = hex.replace('#','');
+      const num = parseInt(c,16);
+      let r = (num >> 16) + Math.round(255*amt);
+      let g = (num >> 8 & 0x00FF) + Math.round(255*amt);
+      let b = (num & 0x0000FF) + Math.round(255*amt);
+      r = Math.min(255, r); g = Math.min(255,g); b = Math.min(255,b);
+      return '#' + ( (1<<24) + (r<<16) + (g<<8) + b ).toString(16).slice(1);
+    }
+
+    // animasyon döngüsü
+    let last = performance.now();
+    function loop(now){
+      const dt = now - last;
+      last = now;
+      update(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    /* Başlangıçta biraz konfeti ve birkaç balon fırlatalım */
+    for(let i=0;i<6;i++) spawnConfetti(rand(60,W-60), H - 60);
+    for(let i=0;i<4;i++) spawnBalloon();
+
+    /* ------------ Butonlar: efekt durdur/başlat, yazdır, paylaş ------------ */
+    const toggleBtn = document.getElementById('toggleEffects');
+    toggleBtn.addEventListener('click', () => {
+      running = !running;
+      toggleBtn.textContent = running ? 'Efektleri Durdur' : 'Efektleri Başlat';
+      if(running){
+        // yeniden başlamışsa zamanlayıcıları sıfırla ve tekrar spawn
+        confettiTimer = 0; balloonTimer = 0;
+        for(let i=0;i<4;i++) spawnConfetti(rand(60,W-60), H - 60);
+      }
+      // canvas'ı temizle/doldur
+      if(!running){
+        ctx.clearRect(0,0,W,H);
+      }
+    });
+
+    document.getElementById('printBtn').addEventListener('click', () => {
+      // Basit: tarayıcı yazdırma (PDF olarak indirebilirsin)
+      window.print();
+    });
+
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+      // Basit paylaşım: sayfayı kopyala (kullanıcı URL'si olmayabilir, kopyalayacak metin sunalım)
+      const text = 'İyi ki varsın Doğu Balat 🌟';
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Mesaj panoya kopyalandı: "' + text + '"\nŞimdi arkadaşına yapıştırarak paylaşabilirsin.');
+      } catch(e){
+        prompt('Kopyalamaya çalıştı:', text);
+      }
+    });
+
+    // ismin üzerine tıklanınca kısa bir konfeti patlat
+    const nameEl = document.getElementById('name');
+    nameEl.style.cursor = 'pointer';
+    nameEl.title = 'Tıkla, sürpriz efekt!';
+    nameEl.addEventListener('click', (e) => {
+      const rect = nameEl.getBoundingClientRect();
+      spawnConfetti(rect.left + rect.width/2, rect.top + rect.height/2 - 40);
+      // birkaç küçük balon da ekle
+      for(let i=0;i<2;i++){ setTimeout(spawnBalloon, i*120); }
+    });
+
+    /* Erişilebilirlik: klavye ile 'Enter' de aynı işi yapsın */
+    nameEl.tabIndex = 0;
+    nameEl.addEventListener('keypress', (ev) => {
+      if(ev.key === 'Enter' || ev.key === ' ') nameEl.click();
+    });
+
+    /* küçük not: Sayfa lokal dosya olarak çalışırken bazı paylaşım API'leri kısıtlı olabilir */
+  </script>
+</body>
+</html>
